@@ -9,34 +9,92 @@ Original file is located at
 
 # -*- coding: utf-8 -*-
 import streamlit as st
-import sqlite3
 import pandas as pd
+import sqlite3
 
-st.title("📈 KOSPI Reports DB Viewer")
+st.set_page_config(page_title="KOSPI 재무 요약", layout="wide")
 
-# DB 연결
-conn = sqlite3.connect("kospi_reports.db")
+@st.cache_data
+def load_data(db_name="kospi_reports.db", table_name="reports"):
+    conn = sqlite3.connect(db_name)
+    df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
+    conn.close()
+    return df
 
-# 기본 테이블명 지정 (예: 'reports')
-table_name = "reports"  # 여기에 실제 테이블 이름을 넣으세요
+df = load_data()
 
-# 종목명 검색 입력창
-search_term = st.text_input("🔎 종목명 검색", "")
+st.title("📊 KOSPI 종목 재무 요약 보고서")
 
-# 쿼리 생성
+# ㄱ~ㅎ 선택 필터 추가
+initials = ['전체', 'ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']
+selected_initial = st.selectbox("🔡 종목명 초성 필터:", initials)
+
+def get_initial(korean_char):
+    ch_code = ord(korean_char) - ord('가')
+    if 0 <= ch_code < 11172:
+        cho = ch_code // 588
+        return ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'][cho]
+    return ""
+
+if selected_initial != "전체":
+    df = df[df["종목명"].apply(lambda x: get_initial(x[0]) == selected_initial)]
+
+# 🔍 텍스트 검색 기반 필터링
+search_term = st.text_input("🔍 종목명 또는 티커 검색:", "")
 if search_term:
-    query = f"""
-        SELECT * FROM {table_name}
-        WHERE 종목명 LIKE ?
-        LIMIT 100
-    """
-    df = pd.read_sql(query, conn, params=(f"%{search_term}%",))
-else:
-    query = f"SELECT * FROM {table_name} LIMIT 100"
-    df = pd.read_sql(query, conn)
+    df = df[df["종목명"].str.contains(search_term, case=False) | df["티커"].str.contains(search_term, case=False)]
 
-# 결과 출력
-st.write(f"📄 {table_name} 테이블 미리보기 (최대 100행)")
-st.dataframe(df)
+filtered_names = df["종목명"].tolist()
 
-conn.close()
+if not filtered_names:
+    st.warning("검색 결과가 없습니다.")
+    st.stop()
+
+선택한_종목 = st.selectbox("📌 종목을 선택하세요:", filtered_names)
+종목_df = df[df["종목명"] == 선택한_종목].iloc[0]
+
+st.subheader(f"📌 {선택한_종목} ({종목_df['티커']})")
+st.markdown("---")
+
+# 📊 주요 재무 지표 카드 형태로 표시
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric("현재가", 종목_df["현재가"])
+    st.metric("ROE (최근)", 종목_df["ROE_최근"])
+    st.metric("PER (최근)", 종목_df["PER_최근"])
+    st.metric("PBR (최근)", 종목_df["PBR_최근"])
+
+with col2:
+    st.metric("ROE (전기)", 종목_df["ROE_전기"])
+    st.metric("PER (전기)", 종목_df["PER_전기"])
+    st.metric("PBR (전기)", 종목_df["PBR_전기"])
+    st.metric("부채비율 (최근)", 종목_df["부채비율_최근"])
+
+with col3:
+    st.metric("부채비율 (전기)", 종목_df["부채비율_전기"])
+    st.metric("유보율 (최근)", 종목_df["유보율_최근"])
+    st.metric("유보율 (전기)", 종목_df["유보율_전기"])
+    st.metric("매출액 (최근)", 종목_df["매출액_최근"])
+
+# 📈 손익 정보
+st.markdown("#### 💼 손익 정보")
+st.write(f"- 영업이익 (최근): **{종목_df['영업이익_최근']}**")
+st.write(f"- 순이익 (최근): **{종목_df['순이익_최근']}**")
+
+# 📰 뉴스 출력
+with st.expander("📰 최근 뉴스 보기"):
+    if isinstance(종목_df["최근뉴스"], str):
+        news_list = 종목_df["최근뉴스"].split("\\n")
+        for news in news_list:
+            if "http" in news:
+                parts = news.split(" http")
+                st.markdown(f"- [{parts[0]}](http{parts[1]})")
+            else:
+                st.write(f"- {news}")
+    else:
+        st.write("뉴스 없음")
+
+# 📋 전체 테이블 조회
+with st.expander("📃 전체 종목 테이블 보기"):
+    st.dataframe(df[["종목명", "티커", "현재가", "ROE_최근", "PER_최근", "PBR_최근"]].sort_values(by="ROE_최근", ascending=False))
