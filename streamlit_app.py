@@ -7,6 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1GsRbGKphhBgkS7Ps_qdEP6rVxgv1NrP_
 """
 
+# -*- coding: utf-8 -*-
 import streamlit as st
 import sqlite3
 import pandas as pd
@@ -16,16 +17,26 @@ st.title("📈 KOSPI Reports DB Viewer")
 # DB 연결
 conn = sqlite3.connect("kospi_reports.db")
 
-# 테이블 목록 조회
-tables = pd.read_sql("SELECT name FROM sqlite_master WHERE type='table';", conn)
-table_list = tables['name'].tolist()
+# 기본 테이블명 지정 (예: 'reports')
+table_name = "reports"  # 여기에 실제 테이블 이름을 넣으세요
 
-selected_table = st.selectbox("테이블 선택", table_list)
+# 종목명 검색 입력창
+search_term = st.text_input("🔎 종목명 검색", "")
 
-# 선택한 테이블 내용 조회
-if selected_table:
-    df = pd.read_sql(f"SELECT * FROM {selected_table} LIMIT 100", conn)
-    st.write(f"🔍 {selected_table} 테이블 미리보기 (최대 100행)")
-    st.dataframe(df)
+# 쿼리 생성
+if search_term:
+    query = f"""
+        SELECT * FROM {table_name}
+        WHERE 종목명 LIKE ?
+        LIMIT 100
+    """
+    df = pd.read_sql(query, conn, params=(f"%{search_term}%",))
+else:
+    query = f"SELECT * FROM {table_name} LIMIT 100"
+    df = pd.read_sql(query, conn)
+
+# 결과 출력
+st.write(f"📄 {table_name} 테이블 미리보기 (최대 100행)")
+st.dataframe(df)
 
 conn.close()
