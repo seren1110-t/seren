@@ -84,8 +84,8 @@ st.write(f"- 순이익 (최근): **{종목_df['순이익_최근']}**")
 
 # 📰 뉴스 출력
 with st.expander("📰 최근 뉴스 보기"):
-    if isinstance(종목_df["최근뉴스"], str):
-        news_list = 종목_df["최근뉴스"].split("\\n")
+    if isinstance(종목_df["최신뉴스"], str):
+        news_list = 종목_df["최신뉴스"].split("\\n")
         for news in news_list:
             if "http" in news:
                 parts = news.split(" http")
