@@ -85,15 +85,12 @@ st.write(f"- 순이익 (최근): **{종목_df['순이익_최근']}**")
 # 📰 뉴스 출력
 with st.expander("📰 최근 뉴스 보기"):
     if isinstance(종목_df["최신뉴스"], str):
-        news_list = 종목_df["최신뉴스"].split("\\n")
-        for news in news_list:
-            if "http" in news:
-                parts = news.split(" http")
-                st.markdown(f"- [{parts[0]}](http{parts[1]})")
-            else:
-                st.write(f"- {news}")
+        news_list = 종목_df["최신뉴스"].splitlines()  # 또는 .split("\n")
+        for i, news_url in enumerate(news_list, 1):
+            st.markdown(f"{i}. [뉴스 링크]({news_url})")
     else:
         st.write("뉴스 없음")
+
 
 # 📋 전체 테이블 조회
 with st.expander("📃 전체 종목 테이블 보기"):
