@@ -95,3 +95,20 @@ with st.expander("📰 최근 뉴스 보기"):
 # 📋 전체 테이블 조회
 with st.expander("📃 전체 종목 테이블 보기"):
     st.dataframe(df[["종목명", "티커", "현재가", "ROE_최근", "PER_최근", "PBR_최근"]].sort_values(by="ROE_최근", ascending=False))
+
+
+# 📈 종가 꺾은선 그래프
+st.markdown("#### 📈 일별 종가 추이")
+
+# 종가 날짜 컬럼만 선택 (예: '20240520' ~ '20250519')
+price_cols = [col for col in df.columns if col.isdigit() and len(col) == 8]
+
+# 선택 종목의 일별 종가 시계열 생성
+price_series = 종목_df[price_cols].astype(float)
+price_series.index = pd.to_datetime(price_cols, format='%Y%m%d')
+price_series.name = "종가"
+
+# DataFrame으로 변환 후 차트 출력
+chart_df = price_series.reset_index().rename(columns={'index': '날짜'})
+
+st.line_chart(chart_df.set_index("날짜"))
