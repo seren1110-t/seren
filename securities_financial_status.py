@@ -174,10 +174,12 @@ import sqlite3
 # 현재 작업 디렉토리에 저장
 db_path = "financial_data.db"
 
-# SQLite 연결 및 저장
-conn = sqlite3.connect(db_path)
+for col in df.columns:
+    df[col] = df[col].apply(lambda x: ','.join(x) if isinstance(x, list) else x)
+
+# SQLite에 저장
+conn = sqlite3.connect("financial_data.db")
 df.to_sql('financial_data', conn, if_exists='replace', index=False)
 conn.close()
-
 print(f"✅ {db_path} 파일이 생성되어 Git에 추가될 수 있습니다.")
 
