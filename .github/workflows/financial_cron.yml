@@ -2,7 +2,7 @@ name: Daily Financial Data Update
 
 on:
   schedule:
-    - cron: '24 14 * * *'  # 한국시간 23:21
+    - cron: '06 15 * * *'  # 한국시간 23:21
   push:
     branches:
       - main
