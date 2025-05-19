@@ -146,7 +146,7 @@ from datetime import datetime, timedelta
 
 # 조회 날짜 범위 설정 (최근 1년)
 end_date = datetime.today()
-start_date = end_date - timedelta(days=3)
+start_date = end_date - timedelta(days=6)
 
 # 날짜 리스트 생성 (영업일 기준)
 date_list = stock.get_market_ohlcv_by_date(start_date.strftime("%Y%m%d"),
