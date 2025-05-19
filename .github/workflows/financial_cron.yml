@@ -3,7 +3,7 @@ name: Daily Financial Data Update
 
 on:
   schedule:
-    - cron: '30 5 * * *'  # 한국시간 오후 2시 30분 = UTC 오전 5시 30분
+    - cron: '35 5 * * *'  # 한국시간 14:35 (오후 2시 35분)에 매일 실행
   workflow_dispatch:
 
 jobs:
