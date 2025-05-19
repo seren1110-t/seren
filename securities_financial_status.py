@@ -170,7 +170,14 @@ df  = df.dropna()
 
 merged_df = df
 
-save_path = "financial_data.csv"
-df.to_csv(save_path, index=False, encoding='utf-8-sig')
-print(f"✅ {save_path} 경로에 financial_data.csv 파일이 저장되었습니다.")
+import sqlite3
+# 현재 작업 디렉토리에 저장
+db_path = "financial_data.db"
+
+# SQLite 연결 및 저장
+conn = sqlite3.connect(db_path)
+df.to_sql('financial_data', conn, if_exists='replace', index=False)
+conn.close()
+
+print(f"✅ {db_path} 파일이 생성되어 Git에 추가될 수 있습니다.")
 
