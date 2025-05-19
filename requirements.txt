@@ -1,4 +1,4 @@
-pykrx
-pandas
-requests
 beautifulsoup4
+requests
+pandas
+pykrx
