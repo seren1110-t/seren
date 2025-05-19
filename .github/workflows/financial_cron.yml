@@ -4,7 +4,10 @@ on:
   schedule:
     - cron: '05 6 * * *'  # 한국시간 14:45
   workflow_dispatch:
-
+  
+permissions:
+  contents: write
+  
 jobs:
   run-script:
     runs-on: ubuntu-latest
