@@ -33,9 +33,13 @@ jobs:
         python securities_financial_status.py
 
     - name: Commit and push output file
+      env:
+        REPO_URL: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
       run: |
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
         git add financial_data.db
         git commit -m "Update financial_data.db from GitHub Actions" || echo "No changes to commit"
-        git push
+    
+        git pull --rebase "$REPO_URL" main  # ✅ 원격 변경 사항 먼저 반영
+        git push "$REPO_URL" main           # ✅ 올바른 주소로 push
