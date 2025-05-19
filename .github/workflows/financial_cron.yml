@@ -26,3 +26,11 @@ jobs:
     - name: Run your script
       run: |
         python securities_financial_status.py
+
+    - name: Commit and push output file
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git add financial_data.csv
+        git commit -m "Update financial_data.csv from GitHub Actions" || echo "No changes to commit"
+        git push
