@@ -173,15 +173,31 @@ merged_df.최신뉴스[0]
 merged_df
 
 import sqlite3
+import os
+import subprocess
+
+db_path = "financial_data.db"
+table_name = "merged_financials"
 
 # list 타입이 있다면 str로 변환
 merged_df = merged_df.applymap(lambda x: str(x) if isinstance(x, list) else x)
 
-# SQLite 데이터베이스 연결 (파일로 저장하거나 :memory:로 메모리 DB 생성 가능)
-conn = sqlite3.connect("financial_data.db")  # 또는 ":memory:" for temporary
-
-# 테이블 이름 지정 후 저장
-merged_df.to_sql("merged_financials", conn, if_exists="replace", index=False)
-
-# 연결 종료
+# SQLite 데이터베이스 연결 및 저장
+conn = sqlite3.connect(db_path)
+merged_df.to_sql(table_name, conn, if_exists="replace", index=False)
 conn.close()
+
+# Git 자동 커밋 및 푸시
+try:
+    # 1. git add
+    subprocess.run(["git", "add", db_path], check=True)
+
+    # 2. git commit
+    subprocess.run(["git", "commit", "-m", f"Update {db_path}"], check=True)
+
+    # 3. git push
+    subprocess.run(["git", "push"], check=True)
+    print("✅ Git push 완료")
+
+except subprocess.CalledProcessError as e:
+    print("❌ Git push 실패:", e)
