@@ -170,29 +170,18 @@ df  = df.dropna()
 
 merged_df = df
 
-import sqlite3
 import os
 import subprocess
 
-db_path = "financial_data.db"
-table_name = "merged_financials"
+csv_path = "financial_data.csv"
 
-# 기존 DB 파일 삭제(선택)
-if os.path.exists(db_path):
-    try:
-        os.remove(db_path)
-    except PermissionError:
-        print("DB 파일 사용 중이거나 권한 문제")
-
-# SQLite 연결 및 저장
-conn = sqlite3.connect(db_path)
-merged_df.to_sql(table_name, conn, if_exists="replace", index=False)
-conn.close()
+# CSV 파일로 저장
+merged_df.to_csv(csv_path, index=False, encoding='utf-8-sig')
 
 # Git 자동 커밋 및 푸시
 try:
-    subprocess.run(["git", "add", db_path], check=True)
-    subprocess.run(["git", "commit", "-m", f"Update {db_path}"], check=True)
+    subprocess.run(["git", "add", csv_path], check=True)
+    subprocess.run(["git", "commit", "-m", f"Update {csv_path}"], check=True)
     subprocess.run(["git", "push"], check=True)
     print("✅ Git push 완료")
 except subprocess.CalledProcessError as e:
