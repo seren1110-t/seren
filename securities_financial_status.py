@@ -140,35 +140,34 @@ df  = df.dropna()
 
 
 
-#import pandas as pd
-#from pykrx import stock
-#from datetime import datetime, timedelta
+import pandas as pd
+from pykrx import stock
+from datetime import datetime, timedelta
 
-## 조회 날짜 범위 설정 (최근 1년)
-#end_date = datetime.today()
-#start_date = end_date - timedelta(days=365)
+# 조회 날짜 범위 설정 (최근 1년)
+end_date = datetime.today()
+start_date = end_date - timedelta(days=365)
 
-## 날짜 리스트 생성 (영업일 기준)
-#date_list = stock.get_market_ohlcv_by_date(start_date.strftime("%Y%m%d"),
-#                                           end_date.strftime("%Y%m%d"),
-#                                           "005930").index.strftime("%Y%m%d").tolist()
+# 날짜 리스트 생성 (영업일 기준)
+date_list = stock.get_market_ohlcv_by_date(start_date.strftime("%Y%m%d"),
+                                           end_date.strftime("%Y%m%d"),
+                                           "005930").index.strftime("%Y%m%d").tolist()
 
-## 결과 저장용 데이터프레임 초기화
-#price_df = pd.DataFrame()
+# 결과 저장용 데이터프레임 초기화
+price_df = pd.DataFrame()
 
-## 날짜별로 전체 종목 종가 받아오기
-#for date in date_list:
-#    try:
-#        daily_prices = stock.get_market_ohlcv_by_ticker(date, market="ALL")[["종가"]]
-#        daily_prices.columns = [date]
-#        price_df = pd.concat([price_df, daily_prices], axis=1)
-#    except:
-#        print(f"{date} 데이터 실패")
-#        continue
+# 날짜별로 전체 종목 종가 받아오기
+for date in date_list:
+    try:
+        daily_prices = stock.get_market_ohlcv_by_ticker(date, market="ALL")[["종가"]]
+        daily_prices.columns = [date]
+        price_df = pd.concat([price_df, daily_prices], axis=1)
+    except:
+        print(f"{date} 데이터 실패")
+        continue
 
-#merged_df = price_df.reset_index().merge(df, on="티커", how="inner")
+merged_df = price_df.reset_index().merge(df, on="티커", how="inner")
 
-merged_df = df
 
 import sqlite3
 # 현재 작업 디렉토리에 저장
