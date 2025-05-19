@@ -138,7 +138,7 @@ df = collect_kospi_reports(limit=1)
 
 df  = df.dropna()
 
-#!pip install pykrx
+
 
 import pandas as pd
 from pykrx import stock
