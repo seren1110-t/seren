@@ -2,7 +2,7 @@ name: Daily Financial Data Update
 
 on:
   schedule:
-    - cron: '05 6 * * *'  # 한국시간 14:45
+    - cron: '56 13 * * *'  # 한국시간 22:56
   workflow_dispatch:
   
 permissions:
