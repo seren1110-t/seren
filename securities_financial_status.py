@@ -140,37 +140,35 @@ df  = df.dropna()
 
 
 
-import pandas as pd
-from pykrx import stock
-from datetime import datetime, timedelta
+#import pandas as pd
+#from pykrx import stock
+#from datetime import datetime, timedelta
 
-# 조회 날짜 범위 설정 (최근 1년)
-end_date = datetime.today()
-start_date = end_date - timedelta(days=365)
+## 조회 날짜 범위 설정 (최근 1년)
+#end_date = datetime.today()
+#start_date = end_date - timedelta(days=365)
 
-# 날짜 리스트 생성 (영업일 기준)
-date_list = stock.get_market_ohlcv_by_date(start_date.strftime("%Y%m%d"),
-                                           end_date.strftime("%Y%m%d"),
-                                           "005930").index.strftime("%Y%m%d").tolist()
+## 날짜 리스트 생성 (영업일 기준)
+#date_list = stock.get_market_ohlcv_by_date(start_date.strftime("%Y%m%d"),
+#                                           end_date.strftime("%Y%m%d"),
+#                                           "005930").index.strftime("%Y%m%d").tolist()
 
-# 결과 저장용 데이터프레임 초기화
-price_df = pd.DataFrame()
+## 결과 저장용 데이터프레임 초기화
+#price_df = pd.DataFrame()
 
-# 날짜별로 전체 종목 종가 받아오기
-for date in date_list:
-    try:
-        daily_prices = stock.get_market_ohlcv_by_ticker(date, market="ALL")[["종가"]]
-        daily_prices.columns = [date]
-        price_df = pd.concat([price_df, daily_prices], axis=1)
-    except:
-        print(f"{date} 데이터 실패")
-        continue
+## 날짜별로 전체 종목 종가 받아오기
+#for date in date_list:
+#    try:
+#        daily_prices = stock.get_market_ohlcv_by_ticker(date, market="ALL")[["종가"]]
+#        daily_prices.columns = [date]
+#        price_df = pd.concat([price_df, daily_prices], axis=1)
+#    except:
+#        print(f"{date} 데이터 실패")
+#        continue
 
-merged_df = price_df.reset_index().merge(df, on="티커", how="inner")
+#merged_df = price_df.reset_index().merge(df, on="티커", how="inner")
 
-merged_df.최신뉴스[0]
-
-merged_df
+merged_df = df
 
 import sqlite3
 import os
@@ -179,25 +177,23 @@ import subprocess
 db_path = "financial_data.db"
 table_name = "merged_financials"
 
-# list 타입이 있다면 str로 변환
-merged_df = merged_df.applymap(lambda x: str(x) if isinstance(x, list) else x)
+# 기존 DB 파일 삭제(선택)
+if os.path.exists(db_path):
+    try:
+        os.remove(db_path)
+    except PermissionError:
+        print("DB 파일 사용 중이거나 권한 문제")
 
-# SQLite 데이터베이스 연결 및 저장
+# SQLite 연결 및 저장
 conn = sqlite3.connect(db_path)
 merged_df.to_sql(table_name, conn, if_exists="replace", index=False)
 conn.close()
 
 # Git 자동 커밋 및 푸시
 try:
-    # 1. git add
     subprocess.run(["git", "add", db_path], check=True)
-
-    # 2. git commit
     subprocess.run(["git", "commit", "-m", f"Update {db_path}"], check=True)
-
-    # 3. git push
     subprocess.run(["git", "push"], check=True)
     print("✅ Git push 완료")
-
 except subprocess.CalledProcessError as e:
     print("❌ Git push 실패:", e)
