@@ -1,9 +1,8 @@
-# .github/workflows/financial_cron.yml
 name: Daily Financial Data Update
 
 on:
   schedule:
-    - cron: '45 5 * * *'  # 한국시간 14:45 (오후 2시 45분)
+    - cron: '45 5 * * *'  # 한국시간 14:45
   workflow_dispatch:
 
 jobs:
@@ -25,4 +24,5 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run your script
-      run: python securities_financial_status.py
+      run: |
+        python securities_financial_status.py
