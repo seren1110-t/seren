@@ -146,7 +146,7 @@ from datetime import datetime, timedelta
 
 # 조회 날짜 범위 설정 (최근 1년)
 end_date = datetime.today()
-start_date = end_date - timedelta(days=365)
+start_date = end_date - timedelta(days=2)
 
 # 날짜 리스트 생성 (영업일 기준)
 date_list = stock.get_market_ohlcv_by_date(start_date.strftime("%Y%m%d"),
@@ -170,15 +170,20 @@ merged_df = price_df.reset_index().merge(df, on="티커", how="inner")
 
 
 import sqlite3
+
 # 현재 작업 디렉토리에 저장
 db_path = "financial_data.db"
 
-for col in df.columns:
-    df[col] = df[col].apply(lambda x: ','.join(x) if isinstance(x, list) else x)   # 수정필요   list 내용 확인하고 수정   ->securities_financial_status.py  부분 수정
+# '최신뉴스' 컬럼만 리스트를 문자열로 변환 (개행 문자로 구분)
+if '최신뉴스' in merged_df.columns:
+    merged_df['최신뉴스'] = merged_df['최신뉴스'].apply(
+        lambda x: '\n'.join(x) if isinstance(x, list) else x
+    )
 
 # SQLite에 저장
-conn = sqlite3.connect("financial_data.db")
-df.to_sql('financial_data', conn, if_exists='replace', index=False)
+conn = sqlite3.connect(db_path)
+merged_df.to_sql('financial_data', conn, if_exists='replace', index=False)
 conn.close()
+
 print(f"✅ {db_path} 파일이 생성되어 Git에 추가될 수 있습니다.")
 
