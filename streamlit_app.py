@@ -6,7 +6,7 @@ import sqlite3
 st.set_page_config(page_title="📈 KOSPI Analyst AI", layout="wide")
 
 @st.cache_data
-def load_data(db_name="financial_data.db", table_name="reports"):
+def load_data(db_name="financial_data.db", table_name="financial_data"):
     conn = sqlite3.connect(db_name)
     df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
     conn.close()
