@@ -174,7 +174,7 @@ import sqlite3
 db_path = "financial_data.db"
 
 for col in df.columns:
-    df[col] = df[col].apply(lambda x: ','.join(x) if isinstance(x, list) else x)
+    df[col] = df[col].apply(lambda x: ','.join(x) if isinstance(x, list) else x)   # 수정필요   list 내용 확인하고 수정   ->securities_financial_status.py  부분 수정
 
 # SQLite에 저장
 conn = sqlite3.connect("financial_data.db")
