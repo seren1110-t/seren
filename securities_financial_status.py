@@ -170,7 +170,7 @@ df  = df.dropna()
 
 merged_df = df
 
-save_path = r"C:\Users\User\Downloads\financial_data.csv"
+save_path = "financial_data.csv"
 df.to_csv(save_path, index=False, encoding='utf-8-sig')
 print(f"✅ {save_path} 경로에 financial_data.csv 파일이 저장되었습니다.")
 
