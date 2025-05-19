@@ -170,24 +170,7 @@ df  = df.dropna()
 
 merged_df = df
 
-import subprocess
+save_path = r"C:\Users\User\Downloads\financial_data.csv"
+df.to_csv(save_path, index=False, encoding='utf-8-sig')
+print(f"✅ {save_path} 경로에 financial_data.csv 파일이 저장되었습니다.")
 
-def git_commit_push(file_path):
-    try:
-        # git add
-        subprocess.run(["git", "add", file_path], check=True)
-        
-        # git status --porcelain 으로 변경사항 확인
-        result = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
-        if result.stdout.strip() == "":
-            print("⚠️ 커밋할 변경 사항이 없습니다.")
-            return
-        
-        # 커밋
-        subprocess.run(["git", "commit", "-m", f"Update {file_path}"], check=True)
-        subprocess.run(["git", "push"], check=True)
-        print("✅ Git push 완료")
-    except subprocess.CalledProcessError as e:
-        print("❌ Git push 실패:", e)
-
-git_commit_push("financial_data.csv")
