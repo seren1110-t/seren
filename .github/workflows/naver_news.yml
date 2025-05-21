@@ -2,7 +2,7 @@ name: Daily News FAISS Update
 
 on:
   schedule:
-    - cron: '0 1 * * *'  # 한국시간 오전 10시 (UTC 01:00)
+    - cron: '0 0 * * *'  # 한국시간 오전 09시 (UTC 01:00)
 #  push:
 #    branches:
 #      - main
