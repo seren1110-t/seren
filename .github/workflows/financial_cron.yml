@@ -1,0 +1,45 @@
+name: Daily Financial Data Update
+
+on:
+  schedule:
+    - cron: '06 15 * * *'  # 한국시간 23:21
+#  push:
+#    branches:
+#      - main
+  
+permissions:
+  contents: write
+  
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run your script
+      run: |
+        python securities_financial_status.py
+
+    - name: Commit and push output file
+      env:
+        REPO_URL: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git add financial_data.db
+        git commit -m "Update financial_data.db from GitHub Actions" || echo "No changes to commit"
+    
+        git pull --rebase "$REPO_URL" main  # ✅ 원격 변경 사항 먼저 반영
+        git push "$REPO_URL" main           # ✅ 올바른 주소로 push
