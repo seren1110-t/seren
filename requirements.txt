@@ -3,12 +3,4 @@ requests
 pandas
 pykrx
 
-lxml
-openai
-langchain
-transformers
-torch
-faiss-cpu
-scikit-learn
-tqdm
-python-dotenv
+
