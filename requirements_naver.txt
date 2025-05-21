@@ -8,5 +8,6 @@ transformers
 torch
 faiss-cpu
 scikit-learn
+rank_bm25
 tqdm
 python-dotenv
