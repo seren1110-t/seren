@@ -27,6 +27,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements_naver.txt
+        pip install sentence-transformers
 
     - name: Run news update script
       env:
