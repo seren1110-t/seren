@@ -32,7 +32,7 @@ jobs:
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: |
-        python your_script_name.py  # <- 여기에 실제 .py 파일 이름 입력
+        python naver_securities_news.py  # <- 여기에 실제 .py 파일 이름 입력
 
     - name: Commit and push updated files
       env:
