@@ -7,6 +7,7 @@ import pandas as pd
 import re
 import os
 import pickle
+import torch
 
 from dotenv import load_dotenv  # ✅ 추가
 load_dotenv()  # ✅ 환경 변수 로드
