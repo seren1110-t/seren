@@ -1,0 +1,12 @@
+requests
+pandas
+lxml
+langchain-community>=0.0.21
+openai
+langchain
+transformers
+torch
+faiss-cpu
+scikit-learn
+tqdm
+python-dotenv
