@@ -172,7 +172,7 @@ def main():
 
     embedding_model = HuggingFaceEmbeddings(
         model_name="BAAI/bge-m3",
-        model_kwargs={'device': device}  # 'cpu'로 변경 가능
+        model_kwargs={'device': device}
     )
 
     with open("bk_docs.pkl", "rb") as f:
@@ -180,10 +180,21 @@ def main():
 
     bk_faiss_db = FAISS.load_local("bk_faiss_index", embedding_model, allow_dangerous_deserialization=True)
 
+    # ✅ 기존 일자 추출
+    existing_dates = set(doc.metadata.get("일자") for doc in bk_docs if "일자" in doc.metadata)
+
+    # ✅ 새로운 문서 중 기존 날짜 제외
     new_docs = []
     for idx, row in df.iterrows():
-        metadata = {"일자": row["날짜"], "제목": row["제목"], "URL": row["URL"]}
+        news_date = row["날짜"]
+        if news_date in existing_dates:
+            continue  # 이미 저장된 날짜면 건너뛰기
+        metadata = {"일자": news_date, "제목": row["제목"], "URL": row["URL"]}
         new_docs.append(Document(page_content=row["내용"], metadata=metadata))
+
+    if not new_docs:
+        print("새로 추가할 뉴스가 없습니다. 업데이트 중단.")
+        return  # 아무 뉴스도 추가되지 않으면 종료
 
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=900, chunk_overlap=100)
     new_split_docs = text_splitter.split_documents(new_docs)
@@ -201,8 +212,6 @@ def main():
         top_k=5
     )
 
-    
-
     llm = CostTrackingChatOpenAI(
         model_name="gpt-4o",
         api_key=openai.api_key,
@@ -215,7 +224,9 @@ def main():
         pickle.dump(bk_docs, f)
 
     bk_faiss_db.save_local("bk_faiss_index")
-    print("뉴스 업데이트 및 FAISS 인덱스 저장 완료!")
+    print("중복 제거 후 뉴스 업데이트 및 FAISS 인덱스 저장 완료!")
+
+
 
 if __name__ == "__main__":
     main()
