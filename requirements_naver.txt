@@ -1,13 +1,8 @@
 requests
 pandas
 lxml
-langchain-community==0.3.24
-openai
 langchain
-transformers
 torch
 faiss-cpu
-scikit-learn
-rank_bm25
-tqdm
 python-dotenv
+transformers
