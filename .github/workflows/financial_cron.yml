@@ -3,6 +3,7 @@ name: Daily Financial Data Update
 on:
   schedule:
     - cron: '06 15 * * *'  # 한국시간 23:21
+  workflow_dispatch:      # 수동 실행도 가능하게
 #  push:
 #    branches:
 #      - main
