@@ -9,20 +9,13 @@ import os
 import pickle
 import torch
 
-from dotenv import load_dotenv  # ✅ 추가
-load_dotenv()  # ✅ 환경 변수 로드
-
-import openai  # ✅ dotenv 이후에 위치해야 함
-openai.api_key = os.getenv("OPENAI_API_KEY")  # ✅ 바로 할당
+from dotenv import load_dotenv
+load_dotenv()
 
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.schema import Document
-from langchain.retrievers import BM25Retriever, EnsembleRetriever
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.chat_models import ChatOpenAI
-from langchain.chains import RetrievalQA
-from pydantic import Field
 
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 
@@ -139,25 +132,7 @@ def clean_korean_text(text):
     text = re.sub(r'\s+', ' ', text)
     return text.strip()
 
-
-# ========== 2. LLM 확장 ==========
-
-class CostTrackingChatOpenAI(ChatOpenAI):
-    call_count: int = Field(default=0)
-    total_tokens: int = Field(default=0)
-
-    def generate(self, messages, **kwargs):
-        response = super().generate(messages, **kwargs)
-        usage = response.llm_output.get("token_usage", {})
-        prompt_tokens = usage.get("prompt_tokens", 0)
-        completion_tokens = usage.get("completion_tokens", 0)
-        self.call_count += 1
-        self.total_tokens += prompt_tokens + completion_tokens
-        print(f"API 호출 횟수: {self.call_count}, 이번 호출 토큰: {prompt_tokens + completion_tokens}, 누적 토큰: {self.total_tokens}")
-        return response
-
-
-# ========== 3. 실행 메인 ==========
+# ========== 2. 실행 메인 ==========
 
 def main():
     news_data = scrape_news_until_cutoff_today(cutoff_hour=9)
@@ -180,53 +155,31 @@ def main():
 
     bk_faiss_db = FAISS.load_local("bk_faiss_index", embedding_model, allow_dangerous_deserialization=True)
 
-    # ✅ 기존 일자 추출
     existing_dates = set(doc.metadata.get("일자") for doc in bk_docs if "일자" in doc.metadata)
 
-    # ✅ 새로운 문서 중 기존 날짜 제외
     new_docs = []
     for idx, row in df.iterrows():
         news_date = row["날짜"]
         if news_date in existing_dates:
-            continue  # 이미 저장된 날짜면 건너뛰기
+            continue
         metadata = {"일자": news_date, "제목": row["제목"], "URL": row["URL"]}
         new_docs.append(Document(page_content=row["내용"], metadata=metadata))
 
     if not new_docs:
         print("새로 추가할 뉴스가 없습니다. 업데이트 중단.")
-        return  # 아무 뉴스도 추가되지 않으면 종료
+        return
 
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=900, chunk_overlap=100)
     new_split_docs = text_splitter.split_documents(new_docs)
     bk_docs.extend(new_split_docs)
 
-    bm25_retriever = BM25Retriever.from_documents(bk_docs)
-    bm25_retriever.k = 5
-
     bk_faiss_db.add_documents(new_split_docs)
-    faiss_retriever = bk_faiss_db.as_retriever(search_kwargs={"k": 5})
-
-    ensemble_retriever = EnsembleRetriever(
-        retrievers=[bm25_retriever, faiss_retriever],
-        weights=[0.6, 0.4],
-        top_k=5
-    )
-
-    llm = CostTrackingChatOpenAI(
-        model_name="gpt-4o",
-        api_key=openai.api_key,
-        temperature=0
-    )
-
-    qa = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=ensemble_retriever)
 
     with open("bk_docs.pkl", "wb") as f:
         pickle.dump(bk_docs, f)
 
     bk_faiss_db.save_local("bk_faiss_index")
     print("중복 제거 후 뉴스 업데이트 및 FAISS 인덱스 저장 완료!")
-
-
 
 if __name__ == "__main__":
     main()
