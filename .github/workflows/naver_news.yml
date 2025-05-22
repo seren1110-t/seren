@@ -2,7 +2,8 @@ name: Daily News FAISS Update
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 한국시간 오전 09시 (UTC 01:00)
+  - cron: '0 0 * * *'  # 매일 UTC 0시 = KST 9시
+  workflow_dispatch:      # 수동 실행도 가능하게
 #  push:
 #    branches:
 #      - main
